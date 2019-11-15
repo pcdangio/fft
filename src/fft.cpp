@@ -39,7 +39,7 @@ void fft<T>::fft_recurse()
     {
         // n_even and n_odd both > 1.  Recurse to get FFTs of the odd/even vectors.
         // Precalculate n/2.
-        uint32_t n2 = n/2;
+        uint32_t n_2 = n/2;
 
         // Increment step size by factor of 2.
         fft<T>::step_size *= 2;
@@ -48,22 +48,30 @@ void fft<T>::fft_recurse()
         fft::fft_recurse();
         // Odd branch always starts at current input_start + 1, and writes to output after even outputs (n/2)
         fft<T>::input_start++;
-        fft<T>::output_start = n2;
+        fft<T>::output_start = n_2;
         fft::fft_recurse();
         // Reverse changes to global, incrementally used input start/step
         fft<T>::input_start--;
         fft<T>::step_size /= 2;
 
         // Calculate FFT from output vector.
+        // Initialize w_n, which will save on arithmetic operations.
+        // w_k = exp(-2*pi*i*k/n), and only k changes.  so exp(-2*pi*i/n)^k is equivalent
+        // w_n = exp(-2*pi*i/n) and thus for each iteration k we can just multiply by w_n again.
+        std::complex<T> w_n = std::exp<std::complex<T>>(-2 * M_PI * std::complex_literals::i / n)
+        // Initialize w_k for k=0, which evaluates to 1.
+        std::complex<T> w_k = 1;
         // Iterate over k = 0 to N/2-1
-        for(uint32_t k = 0; k < n2; k++)
+        for(uint32_t k = 0; k < n_2; k++)
         {
             // output[k] = even[k] + exp(-2*pi*i*k/n) * odd[k]
-            fft<T>::complex_output[k] = fft<T>::complex_output[k] + std::exp<std::complex<T>>(-2 * M_PI * std::complex_literals::i * k / n) * fft<T>::complex_output[k + n2];
+            fft<T>::complex_output[k] = fft<T>::complex_output[k] + w_k * fft<T>::complex_output[k + n_2];
             // output[k+n/2] = even[k] - w_nk * odd[k]
             // This is the same as the complex conjugate of output[k]
             // Using this method also allows us to overwrite complex_output[k] on the prior step and still calculate output[k+n/2]
-            fft<T>::complex_output[k + n2] = std::conj(fft<T>::complex_output[k]);
+            fft<T>::complex_output[k + n_2] = std::conj(fft<T>::complex_output[k]);
+            // Increment w_k for next iteration.
+            w_k *= w_n;
         }
     }
 
