@@ -22,8 +22,8 @@ private:
     uint32_t input_size;
     uint32_t input_start;
     uint32_t step_size;
-    std::vector<std::complex<T>> complex_output;
-    std::vector<T> real_output;
+    std::vector<std::complex<T>>* complex_output;
+    std::vector<T>* real_output;
     uint32_t output_start;
 
     void fft_recurse();

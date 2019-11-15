@@ -24,16 +24,16 @@ template <class T>
 void fft<T>::fft_recurse()
 {
     // Calculate size of the input vector using current starting index and step.
-    uint32_t n = (fft<T>::input_size - fft<T>::input_start - 1) / fft<T>::step + 1;
+    uint32_t n = (fft<T>::input_size - fft<T>::input_start - 1) / fft<T>::step_size + 1;
 
     // Check size of the input vector.    
     if(n == 2)
     {
         // Single even and single odd. Calculate FFT directly from input vector.
         // Keep in mind that exp(-2*pi*k/N) = 1 when k = 0, so values are just even[start] + 1 * odd[start].
-        fft<T>::complex_output[fft<T>::output_start] = fft<T>::real_input[fft<T>::input_start] + fft<T>::real_input[fft<T>::input_start + fft<T>::step_size];
+        fft<T>::complex_output->at(fft<T>::output_start) = fft<T>::real_input->at(fft<T>::input_start) + fft<T>::real_input->at(fft<T>::input_start + fft<T>::step_size);
         // This assumes that input is real only.  Complex conjugate of a real number is just the real number.
-        fft<T>::complex_output[fft<T>::output_start + 1] = fft<T>::complex_output[fft<T>::output_start];
+        fft<T>::complex_output->at(fft<T>::output_start + 1) = fft<T>::complex_output->at(fft<T>::output_start);
     }
     else
     {
@@ -58,18 +58,18 @@ void fft<T>::fft_recurse()
         // Initialize w_n, which will save on arithmetic operations.
         // w_k = exp(-2*pi*i*k/n), and only k changes.  so exp(-2*pi*i/n)^k is equivalent
         // w_n = exp(-2*pi*i/n) and thus for each iteration k we can just multiply by w_n again.
-        std::complex<T> w_n = std::exp<std::complex<T>>(-2 * M_PI * std::complex_literals::i / n)
+        std::complex<T> w_n = std::exp(static_cast<T>(-2 * M_PI / n) * std::complex<T>(0, 1));
         // Initialize w_k for k=0, which evaluates to 1.
         std::complex<T> w_k = 1;
         // Iterate over k = 0 to N/2-1
         for(uint32_t k = 0; k < n_2; k++)
         {
             // output[k] = even[k] + exp(-2*pi*i*k/n) * odd[k]
-            fft<T>::complex_output[k] = fft<T>::complex_output[k] + w_k * fft<T>::complex_output[k + n_2];
+            fft<T>::complex_output->at(k) = fft<T>::complex_output->at(k) + w_k * fft<T>::complex_output->at(k + n_2);
             // output[k+n/2] = even[k] - w_nk * odd[k]
             // This is the same as the complex conjugate of output[k]
             // Using this method also allows us to overwrite complex_output[k] on the prior step and still calculate output[k+n/2]
-            fft<T>::complex_output[k + n_2] = std::conj(fft<T>::complex_output[k]);
+            fft<T>::complex_output->at(k + n_2) = std::conj(fft<T>::complex_output->at(k));
             // Increment w_k for next iteration.
             w_k *= w_n;
         }
