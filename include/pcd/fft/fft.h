@@ -13,7 +13,7 @@ class fft
 public:
     fft();
 
-    void forward(const std::vector<T>& input, std::vector<std::complex<T>>& output);
+    void forward(std::vector<T>& input, std::vector<std::complex<T>>& output);
     void inverse(const std::vector<std::complex<T>>& input, std::vector<T>& output);
 
 private:

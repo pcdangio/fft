@@ -9,9 +9,32 @@ fft<T>::fft()
 }
 
 template <class T>
-void fft<T>::forward(const std::vector<T>& input, std::vector<std::complex<T>>& output)
+void fft<T>::forward(std::vector<T>& input, std::vector<std::complex<T>>& output)
 {
+    // Pad input array to nearest power of 2.
+    // Store original length to restore at end.
+    uint32_t original_length = input.size();
+    // Find the nearest power of 2.
+    uint32_t padded_length = std::pow(2, std::ceil(std::log2(input.size())));
+    // Resize the vector to pad with zeros.
+    input.resize(padded_length, 0);    
 
+    // Initialize output array and fill with blanks.
+    output.resize(padded_length, 0);
+
+    // Store local variables.
+    real_input = &input;
+    input_size = input.size();
+    input_start = 0;
+    step_size = 1;
+    complex_output = &output;
+    output_start = 0;
+
+    // Begin recursion.
+    fft<T>::fft_recurse();
+
+    // Remove padded zeros.
+    input.resize(original_length);   
 }
 
 template <class T>
