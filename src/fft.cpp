@@ -53,10 +53,11 @@ void fft<T>::fft_recurse()
     if(n == 2)
     {
         // Single even and single odd. Calculate FFT directly from input vector.
-        // Keep in mind that exp(-2*pi*k/N) = 1 when k = 0, so values are just even[start] + 1 * odd[start].
+        // Keep in mind that exp(-2*pi*k/N) = 1 when k = 0, so values are:
+        // even[start] + 1 * odd[start]
+        // even[start] - 1 * odd[start]
         fft<T>::complex_output->at(fft<T>::output_start) = fft<T>::real_input->at(fft<T>::input_start) + fft<T>::real_input->at(fft<T>::input_start + fft<T>::step_size);
-        // This assumes that input is real only.  Complex conjugate of a real number is just the real number.
-        fft<T>::complex_output->at(fft<T>::output_start + 1) = fft<T>::complex_output->at(fft<T>::output_start);
+        fft<T>::complex_output->at(fft<T>::output_start + 1) = fft<T>::real_input->at(fft<T>::input_start) - fft<T>::real_input->at(fft<T>::input_start + fft<T>::step_size);
     }
     else
     {
