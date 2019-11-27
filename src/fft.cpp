@@ -65,18 +65,21 @@ void fft<T>::fft_recurse()
         // Precalculate n/2.
         uint32_t n_2 = n/2;
 
-        // Increment step size by factor of 2.
+        // Store original step size before modifying it so odd starting index can be calculated.
+        uint32_t current_step_size = fft<T>::step_size;
+
+        // Increment step size by factor of 2 for recursion.
         fft<T>::step_size *= 2;
         // Run FFT on evens.
         // Even branch always starts at current input_start, and writes to current output_start.
         fft::fft_recurse();
         // Odd branch always starts at current input_start + 1, and writes to output after even outputs (n/2)
-        fft<T>::input_start++;
+        fft<T>::input_start += current_step_size;
         fft<T>::output_start = n_2;
         fft::fft_recurse();
         // Reverse changes to global, incrementally used input start/step
-        fft<T>::input_start--;
-        fft<T>::step_size /= 2;
+        fft<T>::input_start -= current_step_size;
+        fft<T>::step_size = current_step_size;
 
         // Calculate FFT from output vector.
         // Initialize w_n, which will save on arithmetic operations.
