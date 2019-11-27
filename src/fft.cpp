@@ -88,15 +88,17 @@ void fft<T>::fft_recurse()
         std::complex<T> w_n = std::exp(static_cast<T>(-2 * M_PI / n) * std::complex<T>(0, 1));
         // Initialize w_k for k=0, which evaluates to 1.
         std::complex<T> w_k = 1;
+        // Preallocate storage for even component as it will be overwritten.
+        std::complex<T> even_k;
         // Iterate over k = 0 to N/2-1
         for(uint32_t k = 0; k < n_2; k++)
         {
+            // Store current_even = complex_output[k]
+            even_k = fft<T>::complex_output->at(k);
             // output[k] = even[k] + exp(-2*pi*i*k/n) * odd[k]
-            fft<T>::complex_output->at(k) = fft<T>::complex_output->at(k) + w_k * fft<T>::complex_output->at(k + n_2);
+            fft<T>::complex_output->at(k) = even_k + w_k * fft<T>::complex_output->at(k + n_2);
             // output[k+n/2] = even[k] - w_nk * odd[k]
-            // This is the same as the complex conjugate of output[k]
-            // Using this method also allows us to overwrite complex_output[k] on the prior step and still calculate output[k+n/2]
-            fft<T>::complex_output->at(k + n_2) = std::conj(fft<T>::complex_output->at(k));
+            fft<T>::complex_output->at(k + n_2) = even_k - w_k * fft<T>::complex_output->at(k + n_2);
             // Increment w_k for next iteration.
             w_k *= w_n;
         }
