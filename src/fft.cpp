@@ -22,7 +22,7 @@ void fft<T>::forward(std::vector<T>& input, std::vector<std::complex<T>>& output
     // Initialize output array and fill with blanks.
     output.resize(padded_length, 0);
 
-    // Store local variables.
+    // Store and setup local variables.
     real_input = &input;
     input_size = input.size();
     input_start = 0;
@@ -75,9 +75,10 @@ void fft<T>::fft_recurse()
         fft::fft_recurse();
         // Odd branch always starts at current input_start + 1, and writes to output after even outputs (n/2)
         fft<T>::input_start += current_step_size;
-        fft<T>::output_start = n_2;
+        fft<T>::output_start += n_2;
         fft::fft_recurse();
         // Reverse changes to global, incrementally used input start/step
+        fft<T>::output_start -= n_2;
         fft<T>::input_start -= current_step_size;
         fft<T>::step_size = current_step_size;
 
@@ -91,7 +92,8 @@ void fft<T>::fft_recurse()
         // Preallocate storage for even component as it will be overwritten.
         std::complex<T> even_k;
         // Iterate over k = 0 to N/2-1
-        for(uint32_t k = 0; k < n_2; k++)
+        // Keep in mind that k must start at output_start to read and replace in correct location.
+        for(uint32_t k = fft<T>::output_start; k < fft<T>::output_start + n_2; k++)
         {
             // Store current_even = complex_output[k]
             even_k = fft<T>::complex_output->at(k);
