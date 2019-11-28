@@ -23,12 +23,11 @@ void fft<T>::forward(std::vector<T>& input, std::vector<std::complex<T>>& output
     output.resize(padded_length, 0);
 
     // Store and setup local variables.
-    real_input = &input;
-    input_size = input.size();
-    input_start = 0;
-    step_size = 1;
-    complex_output = &output;
-    output_start = 0;
+    fft<T>::real_input = &input;
+    fft<T>::input_start = 0;
+    fft<T>::step_size = 1;
+    fft<T>::complex_output = &output;
+    fft<T>::output_start = 0;
 
     // Begin recursion.
     fft<T>::fft_recurse();
@@ -47,7 +46,7 @@ template <class T>
 void fft<T>::fft_recurse()
 {
     // Calculate size of the input vector using current starting index and step.
-    uint32_t n = (fft<T>::input_size - fft<T>::input_start - 1) / fft<T>::step_size + 1;
+    uint32_t n = (fft<T>::real_input->size() - fft<T>::input_start - 1) / fft<T>::step_size + 1;
 
     // Check size of the input vector.    
     if(n == 2)
@@ -63,7 +62,7 @@ void fft<T>::fft_recurse()
     {
         // n_even and n_odd both > 1.  Recurse to get FFTs of the odd/even vectors.
         // Precalculate n/2.
-        uint32_t n_2 = n/2;
+        uint32_t n_2 = n / 2;
 
         // Store original step size before modifying it so odd starting index can be calculated.
         uint32_t current_step_size = fft<T>::step_size;
@@ -86,26 +85,23 @@ void fft<T>::fft_recurse()
         // Initialize w_n, which will save on arithmetic operations.
         // w_k = exp(-2*pi*i*k/n), and only k changes.  so exp(-2*pi*i/n)^k is equivalent
         // w_n = exp(-2*pi*i/n) and thus for each iteration k we can just multiply by w_n again.
-        std::complex<T> w_n = std::exp(static_cast<T>(-2 * M_PI / n) * std::complex<T>(0, 1));
+        fft<T>::w_n = std::exp(static_cast<T>(-2 * M_PI / n) * std::complex<T>(0, 1));
         // Initialize w_k for k=0, which evaluates to 1.
-        std::complex<T> w_k = 1;
-        // Preallocate storage for even component as it will be overwritten.
-        std::complex<T> even_k;
+        fft<T>::w_k = 1;
         // Iterate over k = 0 to N/2-1
         // Keep in mind that k must start at output_start to read and replace in correct location.
-        for(uint32_t k = fft<T>::output_start; k < fft<T>::output_start + n_2; k++)
+        for(fft<T>::k = fft<T>::output_start; fft<T>::k < fft<T>::output_start + n_2; fft<T>::k++)
         {
             // Store current_even = complex_output[k]
-            even_k = fft<T>::complex_output->at(k);
+            fft<T>::even_k = fft<T>::complex_output->at(fft<T>::k);
             // output[k] = even[k] + exp(-2*pi*i*k/n) * odd[k]
-            fft<T>::complex_output->at(k) = even_k + w_k * fft<T>::complex_output->at(k + n_2);
+            fft<T>::complex_output->at(fft<T>::k) = fft<T>::even_k + fft<T>::w_k * fft<T>::complex_output->at(fft<T>::k + n_2);
             // output[k+n/2] = even[k] - w_nk * odd[k]
-            fft<T>::complex_output->at(k + n_2) = even_k - w_k * fft<T>::complex_output->at(k + n_2);
+            fft<T>::complex_output->at(fft<T>::k + n_2) = fft<T>::even_k - fft<T>::w_k * fft<T>::complex_output->at(fft<T>::k + n_2);
             // Increment w_k for next iteration.
-            w_k *= w_n;
+            fft<T>::w_k *= fft<T>::w_n;
         }
     }
-
 }
 
 template class fft<float>;
