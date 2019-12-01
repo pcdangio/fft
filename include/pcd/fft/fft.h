@@ -14,30 +14,18 @@ public:
     fft();
 
     void forward(std::vector<T>& input, std::vector<std::complex<T>>& output);
-    void inverse(const std::vector<std::complex<T>>& input, std::vector<T>& output);
+    void forward(std::vector<std::complex<T>>& input, std::vector<std::complex<T>>& output);
+
+    void inverse(std::vector<std::complex<T>>& input, std::vector<T>& output);
+    void inverse(std::vector<std::complex<T>>& input, std::vector<std::complex<T>>& output);
 
 private:
-    // IO Storage
-    const std::vector<T>* real_input;
-    const std::vector<std::complex<T>>* complex_input;
-    std::vector<std::complex<T>>* complex_output;
-    std::vector<T>* real_output;
+    // METHODS
+    template <typename V>
+    void zero_pad(std::vector<V>& input);
 
-    // Recursion Parameters
-    uint32_t input_start;
-    uint32_t step_size;
-    uint32_t output_start;
-
-    // Recursion Variables
-    std::complex<T> w_n;
-    std::complex<T> w_k;
-    uint32_t k;
-    std::complex<T> even_k;
-
-    // Methods
-    void fft_recurse();
-
-
+    template <typename I>
+    void fft_recurse(const std::vector<I>* input, std::vector<std::complex<T>>* output, uint32_t input_start, uint32_t step_size, uint32_t output_start);
 };
 }
 
