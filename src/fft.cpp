@@ -94,6 +94,24 @@ void fft<T>::inverse(std::vector<std::complex<T>>& input, std::vector<std::compl
     input.resize(original_length);
 }
 
+// FREQUENCY BIN METHODS
+template <class T>
+void fft<T>::frequency_bins(uint32_t fft_size, T sample_frequency, std::vector<T>& frequency_bins)
+{
+    // Set up output vector.
+    frequency_bins.clear();
+    frequency_bins.reserve(fft_size);
+
+    // Convert fft_size to T type for loop efficiency.
+    T fft_size_t = static_cast<T>(fft_size);
+
+    // Calculate and output frequency bins using f(i) = i * Fs / N
+    for(T i = 0; i < fft_size_t; i++)
+    {
+        frequency_bins.push_back(i * sample_frequency / fft_size_t);
+    }
+}
+
 // PRIVATE METHODS
 template <class T>
 template <typename V>

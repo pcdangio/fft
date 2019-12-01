@@ -19,6 +19,8 @@ public:
     void inverse(std::vector<std::complex<T>>& input, std::vector<T>& output);
     void inverse(std::vector<std::complex<T>>& input, std::vector<std::complex<T>>& output);
 
+    void frequency_bins(uint32_t fft_size, T sample_frequency, std::vector<T>& frequency_bins);
+
 private:
     // METHODS
     template <typename V>
