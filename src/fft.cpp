@@ -8,22 +8,22 @@ fft<T>::fft()
 
 }
 
+// FORWARD METHODS
 template <class T>
 void fft<T>::forward(std::vector<T>& input, std::vector<std::complex<T>>& output)
 {
     // Pad input array to nearest power of 2.
     // Store original length to restore at end.
     uint32_t original_length = input.size();
-    // Find the nearest power of 2.
-    uint32_t padded_length = std::pow(2, std::ceil(std::log2(input.size())));
-    // Resize the vector to pad with zeros.
-    input.resize(padded_length, 0);    
+    fft<T>::zero_pad<T>(input);
 
     // Initialize output array and fill with blanks.
-    output.resize(padded_length, 0);
+    output.resize(input.size(), 0);
     // Begin recursion.
     fft<T>::fft_recurse<T>(&input, &output, 0, 1, 0);
 
+    // Remove padded zeros.
+    input.resize(original_length);   
     // Begin recursion.
     fft<T>::fft_recurse(&input, &output, 0, 1, 0);
 
@@ -35,6 +35,17 @@ template <class T>
 void fft<T>::inverse(const std::vector<std::complex<T>>& input, std::vector<T>& output)
 {
 
+// PRIVATE METHODS
+template <class T>
+template <typename V>
+void fft<T>::zero_pad(std::vector<V>& input)
+{
+    // Pad input array to nearest power of 2.
+    // Find the nearest power of 2.
+    uint32_t padded_length = std::pow(2, std::ceil(std::log2(input.size())));
+    // Resize the vector to pad with zeros.
+    // This assumes that the default constructor uses zeros.
+    input.resize(padded_length, 0);   
 }
 
 template <class T>
