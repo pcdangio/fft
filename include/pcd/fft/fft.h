@@ -25,7 +25,7 @@ private:
     void zero_pad(std::vector<V>& input);
 
     template <typename I>
-    void fft_recurse(const std::vector<I>* input, std::vector<std::complex<T>>* output, uint32_t input_start, uint32_t step_size, uint32_t output_start);
+    void fft_recurse(const std::vector<I>* input, std::vector<std::complex<T>>* output, bool forward, uint32_t input_start, uint32_t step_size, uint32_t output_start);
 };
 }
 
