@@ -21,6 +21,8 @@ void fft<T>::forward(std::vector<T>& input, std::vector<std::complex<T>>& output
 
     // Initialize output array and fill with blanks.
     output.resize(padded_length, 0);
+    // Begin recursion.
+    fft<T>::fft_recurse<T>(&input, &output, 0, 1, 0);
 
     // Begin recursion.
     fft<T>::fft_recurse(&input, &output, 0, 1, 0);
@@ -36,10 +38,11 @@ void fft<T>::inverse(const std::vector<std::complex<T>>& input, std::vector<T>& 
 }
 
 template <class T>
-void fft<T>::fft_recurse(const std::vector<T>* real_input, std::vector<std::complex<T>>* output, uint32_t input_start, uint32_t step_size, uint32_t output_start)
+template <typename I>
+void fft<T>::fft_recurse(const std::vector<I>* input, std::vector<std::complex<T>>* output, uint32_t input_start, uint32_t step_size, uint32_t output_start)
 {
     // Calculate size of the input vector using current starting index and step.
-    uint32_t n = (real_input->size() - input_start - 1) / step_size + 1;
+    uint32_t n = (input->size() - input_start - 1) / step_size + 1;
 
     // Check size of the input vector.    
     if(n == 2)
@@ -48,8 +51,8 @@ void fft<T>::fft_recurse(const std::vector<T>* real_input, std::vector<std::comp
         // Keep in mind that exp(-2*pi*k/N) = 1 when k = 0, so values are:
         // even[start] + 1 * odd[start]
         // even[start] - 1 * odd[start]
-        output->at(output_start) = real_input->at(input_start) + real_input->at(input_start + step_size);
-        output->at(output_start + 1) = real_input->at(input_start) - real_input->at(input_start + step_size);
+        output->at(output_start) = input->at(input_start) + input->at(input_start + step_size);
+        output->at(output_start + 1) = input->at(input_start) - input->at(input_start + step_size);
     }
     else
     {
@@ -59,9 +62,9 @@ void fft<T>::fft_recurse(const std::vector<T>* real_input, std::vector<std::comp
 
         // Run FFT on evens.
         // Even branch always starts at current input_start, and writes to current output_start.
-        fft::fft_recurse(real_input, output, input_start, step_size*2, output_start);
+        fft::fft_recurse<I>(input, output, input_start, step_size*2, output_start);
         // Odd branch always starts at current input_start + 1, and writes to output after even outputs (n/2)
-        fft::fft_recurse(real_input, output, input_start + step_size, step_size*2, output_start + n_2);
+        fft::fft_recurse<I>(input, output, input_start + step_size, step_size*2, output_start + n_2);
 
         // Calculate FFT from output vector.
         // Initialize w_n, which will save on arithmetic operations.
