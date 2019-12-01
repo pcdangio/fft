@@ -14,7 +14,10 @@ public:
     fft();
 
     void forward(std::vector<T>& input, std::vector<std::complex<T>>& output);
-    void inverse(const std::vector<std::complex<T>>& input, std::vector<T>& output);
+    void forward(std::vector<std::complex<T>>& input, std::vector<std::complex<T>>& output);
+
+    void inverse(std::vector<std::complex<T>>& input, std::vector<T>& output);
+    void inverse(std::vector<std::complex<T>>& input, std::vector<std::complex<T>>& output);
 
 private:
     // METHODS

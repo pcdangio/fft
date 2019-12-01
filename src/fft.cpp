@@ -24,16 +24,58 @@ void fft<T>::forward(std::vector<T>& input, std::vector<std::complex<T>>& output
 
     // Remove padded zeros.
     input.resize(original_length);   
+}
+template <class T>
+void fft<T>::forward(std::vector<std::complex<T>>& input, std::vector<std::complex<T>>& output)
+{
+    // Pad input array to nearest power of 2.
+    // Store original length to restore at end.
+    uint32_t original_length = input.size();
+    fft<T>::zero_pad<std::complex<T>>(input); 
+
+    // Initialize output array and fill with blanks.
+    output.resize(input.size(), 0);
     // Begin recursion.
-    fft<T>::fft_recurse(&input, &output, 0, 1, 0);
+    fft<T>::fft_recurse<std::complex<T>>(&input, &output, 0, 1, 0);
 
     // Remove padded zeros.
-    input.resize(original_length);   
+    input.resize(original_length);  
 }
 
+// INVERSE METHODS
 template <class T>
-void fft<T>::inverse(const std::vector<std::complex<T>>& input, std::vector<T>& output)
+void fft<T>::inverse(std::vector<std::complex<T>>& input, std::vector<T>& output)
 {
+    // To get a real output, we must create a temporary complex output vector
+    // fft_recurse operates on the output in place and must be complex.
+    std::vector<std::complex<T>> temp_output;
+
+    // Run regular fft inverse on the temporary output.
+    fft<T>::inverse(input, temp_output);
+
+    // Copy real components of complex temp_output into output array.
+    output.reserve(temp_output.size());
+    for(uint32_t i = 0; i < temp_output.size(); i++)
+    {
+        output.at(i) = temp_output.at(i).real();
+    }
+}
+template <class T>
+void fft<T>::inverse(std::vector<std::complex<T>>& input, std::vector<std::complex<T>>& output)
+{
+    // Pad input array to nearest power of 2.
+    // Store original length to restore at end.
+    uint32_t original_length = input.size();
+    fft<T>::zero_pad<std::complex<T>>(input); 
+
+    // Initialize output array and fill with blanks.
+    output.resize(input.size(), 0);
+    // Begin recursion.
+    fft<T>::fft_recurse<std::complex<T>>(&input, &output, 0, 1, 0);
+
+    // Remove padded zeros.
+    input.resize(original_length);
+}
 
 // PRIVATE METHODS
 template <class T>
